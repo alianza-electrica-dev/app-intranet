@@ -35,4 +35,20 @@ return [
         ],
     ],
 
+    'sap' => [
+        'host' => env('SAP_HOST'),
+        'username' => env('SAP_USER'),
+        'password' => env('SAP_PASSWORD'),
+        'static_companies' => [
+            'SBO_Pruebas',
+            'SBO_Alianza',
+        ],
+        'dynamic_companies' => explode(',', env('SAP_COMPANIES')),
+    ],
+
+
+
+
+
+
 ];
