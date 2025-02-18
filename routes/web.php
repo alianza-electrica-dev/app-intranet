@@ -13,6 +13,9 @@ use App\Http\Controllers\CotizacionController;
 
 
 
+
+
+
 Route::get('/', function () {
     return view('welcome');
 });
@@ -38,6 +41,6 @@ Route::get('/{company}/productos/{identifier}', [ProductosController::class, 'ge
 //Rutas POST
 Route::post('/{company}/{cliente}/direccionenvio', [DireccionEnvioController::class, 'store'])
     ->withoutMiddleware([Illuminate\Foundation\Http\Middleware\VerifyCsrfToken::class]);
-Route::post('/{company}/{cliente}/cotizacion', [CotizacionController::class, 'store'])
+Route::post('/{company}/{cliente}/cotizacion', [CotizacionController::class, 'crearCotizacion'])
     ->withoutMiddleware([Illuminate\Foundation\Http\Middleware\VerifyCsrfToken::class]);
 

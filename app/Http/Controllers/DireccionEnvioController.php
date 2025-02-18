@@ -46,8 +46,17 @@ class DireccionEnvioController extends Controller
                 'RFC' => $validatedData['datos']['rfc'] ?? '',
             ]);
         } 
-        // Si el envío es CR o PAQ
-        else {
+        // Si el envío es CR
+        elseif ($tipoEnvio == 'CR') {
+            $response = array_merge($response, [
+                'Nombre de Persona autorizada' => $validatedData['datos']['persona_autorizada'] ?? '',
+                'Sucursal' => $validatedData['datos']['sucursal'] ?? '',
+                'Número de identidad' => $validatedData['datos']['numero_identidad'] ?? '',
+                'Fecha de recolección' => $validatedData['datos']['fecha_recoleccion'] ?? '',
+            ]);
+        }
+        // Si el envío es PAQ
+        elseif ($tipoEnvio == 'PAQ') {
             $response = array_merge($response, [
                 'Nombre de Persona autorizada' => $validatedData['datos']['persona_autorizada'] ?? '',
                 'Sucursal' => $validatedData['datos']['sucursal'] ?? '',
