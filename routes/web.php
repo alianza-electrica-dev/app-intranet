@@ -33,6 +33,9 @@ Route::get('/{company}/clientes/{identifier}', [ClientesController::class, 'getC
 Route::get('/{company}/listas-precios/{cardCode}', [ListaPreciosController::class, 'getPriceLists']);
 Route::get('/{company}/estado-cuenta/{identifier}', [EdoCuentaController::class, 'getEstadoCuenta']);
 Route::get('/{company}/productos/{identifier}', [ProductosController::class, 'getProductos']);
+
+
+//Rutas POST
 Route::post('/{company}/{cliente}/direccionenvio', [DireccionEnvioController::class, 'store'])
     ->withoutMiddleware([Illuminate\Foundation\Http\Middleware\VerifyCsrfToken::class]);
 Route::post('/{company}/{cliente}/cotizacion', [CotizacionController::class, 'store'])
