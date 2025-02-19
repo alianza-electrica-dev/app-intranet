@@ -7,10 +7,10 @@ class CompanyController extends Controller
 {
     public function enterprise()
     {
-        return response()->json($this->obtenerEmpresas());
+        return response()->json($this->getcompanies());
     }
 
-    private function obtenerEmpresas()
+    private function getcompanies()
     {
         return [
             ["id" => 1, "name" => "Alianza Electrica"],

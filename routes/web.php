@@ -4,10 +4,10 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\TestServiceLayerController;
 use App\Http\Controllers\TestServiceLayerMacroController;
 use App\Http\Controllers\CompanyController;
-use App\Http\Controllers\CustomersController;
+use App\Http\Controllers\ClientesController;
 use App\Http\Controllers\PriceListController;
 use App\Http\Controllers\StatementController;
-use App\Http\Controllers\ProductsController;
+use App\Http\Controllers\ProductosController;
 use App\Http\Controllers\ShippingAddressController;
 use App\Http\Controllers\QuotationController;
 
@@ -31,11 +31,11 @@ Route::get('/logout-macro', [TestServiceLayerMacroController::class, 'logoutMacr
 
 
 //Cotizador
-Route::get('/empresas', [CompanyController::class, 'enterprise']);
-Route::get('/{company}/clientes/{identifier}', [CustomersController::class, 'getClientes']);
+Route::get('/companies', [CompanyController::class, 'enterprise']);
+Route::get('/{company}/clientes/{identifier}', [ClientesController::class, 'getClientes']);
 Route::get('/{company}/listas-precios/{cardCode}', [PriceListController::class, 'getPriceLists']);
 Route::get('/{company}/estado-cuenta/{identifier}', [StatementController::class, 'getEstadoCuenta']);
-Route::get('/{company}/productos/{identifier}', [ProductsController::class, 'getProductos']);
+Route::get('/{company}/productos/{identifier}', [ProductosController::class, 'getProductos']);
 
 
 //Rutas POST

@@ -7,7 +7,7 @@ use Illuminate\Support\Facades\Log;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Collection;
 
-class ProductsController extends Controller
+class ProductosController extends Controller
 {
     public function getProductos(string $company, string $identifier): JsonResponse
     {
