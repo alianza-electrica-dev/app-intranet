@@ -60,14 +60,14 @@ class ProductsController extends Controller
     private function gettingProducts(): Collection
     {
         $response = Http::sapSL()->get('ProductTrees');
-
+    
         if ($response->status() === 401) {
-            return response()->json(['error' => 'Session expired. Please log in again.'], 401)->send();
+            throw new \Exception('Session expired. Please log in again.');
         }
-
+    
         return collect($response->json()['value'] ?? []);
     }
-
+    
     private function FilterProducts(Collection $products, string $identifier): Collection
     {
         return $products->filter(fn($product) => stripos($product['TreeCode'], $identifier) !== false)
