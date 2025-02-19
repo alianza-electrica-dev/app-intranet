@@ -9,58 +9,58 @@ class PriceListController extends Controller
 {
     public function getPriceLists($company, $cardCode)
     {
-        if (!$this->validarSesion($company)) {
-            return response()->json(['error' => 'No has iniciado sesión con esta empresa o la sesión ha expirado.'], 401);
+        if (!$this->validateSession($company)) {
+            return response()->json(['error' => 'You are not logged in with this company or your session has expired.'], 401);
         }
 
         if (!$cardCode) {
-            return response()->json(['error' => 'Debes proporcionar un CardCode.'], 400);
+            return response()->json(['error' => 'You must provide a CardCode.'], 400);
         }
 
         try {
-            $cliente = $this->obtenerCliente($cardCode);
-            if (!$cliente) {
-                return response()->json(['message' => 'Cliente no encontrado.'], 404);
+            $customer = $this->gettingCustomer($cardCode);
+            if (!$customer) {
+                return response()->json(['message' => 'Customer not found.'], 404);
             }
 
-            $priceListNum = $cliente['PriceListNum'] ?? null;
+            $priceListNum = $customer['PriceListNum'] ?? null;
             if (!$priceListNum) {
-                return response()->json(['error' => 'El cliente no tiene una lista de precios asignada.'], 404);
+                return response()->json(['error' => 'The customer does not have a price list assigned.'], 404);
             }
 
-            return $this->obtenerListaPrecios($priceListNum);
+            return $this->getPriceList($priceListNum);
         } catch (\Exception $e) {
-            Log::error('Error en la solicitud a SAP Business One: ' . $e->getMessage());
-            return response()->json(['error' => 'Ocurrió un error al conectarse al servicio', 'details' => $e->getMessage()], 500);
+            Log::error('Error in request to SAP Business One: ' . $e->getMessage());
+            return response()->json(['error' => 'An error occurred while connecting to the service', 'details' => $e->getMessage()], 500);
         }
     }
 
-    private function validarSesion($company)
+    private function validateSession($company)
     {
         $loggedCompany = session('companyDb');
         return $loggedCompany && strtoupper($company) === str_replace('SBO_', '', strtoupper($loggedCompany));
     }
 
-    private function obtenerCliente($cardCode)
+    private function gettingCustomer($cardCode)
     {
         $response = Http::sapSL()->get('BusinessPartners', [
             '$filter' => "(CardCode eq '$cardCode' or CardName eq '$cardCode') and CardType eq 'C'"
         ]);
 
         if ($response->status() === 401) {
-            response()->json(['error' => 'Sesión expirada. Por favor inicia sesión nuevamente.'], 401)->send();
+            response()->json(['error' => 'Session expired. Please log in again.'], 401)->send();
             exit;
         }
 
         return collect($response->json()['value'] ?? [])->first();
     }
 
-    private function obtenerListaPrecios($priceListNum)
+    private function getPriceList($priceListNum)
     {
         $response = Http::sapSL()->get("PriceLists({$priceListNum})");
 
         return $response->successful()
             ? response()->json($response->json(), 200)
-            : response()->json(['error' => 'Error al obtener la lista de precios', 'details' => $response->json()], $response->status());
+            : response()->json(['error' => 'Error getting price list', 'details' => $response->json()], $response->status());
     }
 }

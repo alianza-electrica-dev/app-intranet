@@ -8,70 +8,70 @@ use Carbon\Carbon;
 
 class StatementController extends Controller
 {
-    public function getEstadoCuenta($company, $identifier)
+    public function getAccountStatus($company, $identifier)
     {
-        if (!$this->validarSesion($company)) {
-            return response()->json(['error' => 'No has iniciado sesión con esta empresa o la sesión ha expirado.'], 401);
+        if (!$this->validateSession($company)) {
+            return response()->json(['error' => 'You are not logged in with this company or your session has expired.'], 401);
         }
 
         if (!$identifier) {
-            return response()->json(['error' => 'Debes proporcionar un CardCode o CardName.'], 400);
+            return response()->json(['error' => 'You must provide a CardCode or CardName.'], 400);
         }
 
         try {
-            $cliente = $this->consultarCliente($identifier);
+            $customer = $this->consultCustomer($identifier);
 
-            if (!$cliente) {
-                return response()->json(['message' => 'Cliente no encontrado.'], 404);
+            if (!$customer) {
+                return response()->json(['message' => 'Customer not found.'], 404);
             }
 
-            return response()->json($this->formatearEstadoCuenta($cliente), 200);
+            return response()->json($this->formatAccountStatus($customer), 200);
         } catch (\Exception $e) {
-            Log::error('Error en la solicitud a SAP Business One: ' . $e->getMessage());
-            return response()->json(['error' => 'Ocurrió un error al conectarse al servicio', 'details' => $e->getMessage()], 500);
+            Log::error('Error in request to SAP Business One: ' . $e->getMessage());
+            return response()->json(['error' => 'An error occurred while connecting to the service', 'details' => $e->getMessage()], 500);
         }
     }
 
-    private function validarSesion($company)
+    private function validateSession($company)
     {
         $loggedCompany = session('companyDb');
         return $loggedCompany && strtoupper($company) === str_replace('SBO_', '', strtoupper($loggedCompany));
     }
 
-    private function consultarCliente($identifier)
+    private function consultCustomer($identifier)
     {
         $response = Http::sapSL()->get('BusinessPartners', [
             '$filter' => "(CardCode eq '$identifier' or CardName eq '$identifier')"
         ]);
 
         if ($response->status() === 401) {
-            response()->json(['error' => 'Sesión expirada. Por favor inicia sesión nuevamente.'], 401)->send();
+            response()->json(['error' => 'Session expired. Please log in again.'], 401)->send();
             exit;
         }
 
         return collect($response->json()['value'] ?? [])->first();
     }
 
-    private function formatearEstadoCuenta($cliente)
+    private function formatAccountStatus($customer)
     {
-        $currentBalance = $cliente['CurrentAccountBalance'] ?? 0;
-        $creditLimit = $cliente['CreditLimit'] ?? 0;
-        $lastPaymentDate = $this->getLastPaymentDate($cliente['CardCode']);
+        $currentBalance = $customer['CurrentAccountBalance'] ?? 0;
+        $creditLimit = $customer['CreditLimit'] ?? 0;
+        $lastPaymentDate = $this->getLastPaymentDate($customer['CardCode']);
 
         return [
-            'CardCode'              => $cliente['CardCode'],
-            'CardName'              => $cliente['CardName'],
+            'CardCode'              => $customer['CardCode'],
+            'CardName'              => $customer['CardName'],
             'CurrentAccountBalance' => $currentBalance,
             'CreditLimit'           => $creditLimit,
             'CreditoDisponible'     => max(0, $creditLimit - $currentBalance),
-            'SaldoDeudor'           => max(0, $currentBalance),
-            'DiasCredito'           => $lastPaymentDate ? $this->getDiasCreditoDesdeUltimoPago($lastPaymentDate) : null,
+            'Debit balance'           => max(0, $currentBalance),
+            'Credit Days'           => $lastPaymentDate ? $this->getCreditDaysSinceLastPayment($lastPaymentDate) : null,
             'LastPaymentDate'       => $lastPaymentDate,
-            'PayTermsGrpCode'       => $cliente['PayTermsGrpCode'] ?? null,
+            'PayTermsGrpCode'       => $customer['PayTermsGrpCode'] ?? null,
         ];
     }
 
-    private function getDiasCreditoDesdeUltimoPago($lastPaymentDate)
+    private function getCreditDaysSinceLastPayment($lastPaymentDate)
     {
         // Convertimos el resultado a entero para eliminar cualquier decimal.
         return (int) Carbon::parse($lastPaymentDate)->diffInDays(Carbon::now());

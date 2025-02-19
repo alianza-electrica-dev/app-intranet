@@ -8,14 +8,14 @@ class ShippingAddressController extends Controller
 {
     public function store(Request $request, $company, $cliente)
     {
-        if (!$this->validarSesion($company)) {
-            return response()->json(['error' => 'No has iniciado sesión con esta empresa o la sesión ha expirado.'], 401);
+        if (!$this->validateSession($company)) {
+            return response()->json(['error' => 'You are not logged in with this company or your session has expired.'], 401);
         }
 
         $validatedData = $request->validate([
-            'tipo_envio' => 'required|string|in:CR,PAQ,RLOC,RFOR',
-            'tipo_entrega' => 'required|string',
-            'datos' => 'required|array',
+            'shipping_type' => 'required|string|in:CR,PAQ,RLOC,RFOR',
+            'delivery_type' => 'required|string',
+            'data' => 'required|array',
         ]);
 
         return response()->json($this->formatResponse($validatedData), 200);
@@ -23,52 +23,52 @@ class ShippingAddressController extends Controller
 
     private function formatResponse(array $validatedData): array
     {
-        $tipoEnvio = strtoupper($validatedData['tipo_envio']);
-        $tipoEntrega = strtoupper($validatedData['tipo_entrega']);
+        $shippingType = strtoupper($validatedData['shipping_type']);
+        $typeDelivery = strtoupper($validatedData['delivery_type']);
 
         $response = [
-            'Tipo de envío' => $tipoEnvio,
-            'Tipo de entrega' => $tipoEntrega,
-            'Teléfono de Contacto' => $validatedData['datos']['telefono_contacto'] ?? '',
-            'Correo de Contacto' => $validatedData['datos']['correo_contacto'] ?? '',
-            'Instrucciones de entrega' => $validatedData['datos']['instrucciones_entrega'] ?? '',
+            'Type of shipping' => $shippingType,
+            'Type of delivery' => $typeDelivery,
+            'Contact Telephone' => $validatedData['data']['contact_telephone'] ?? '',
+            'Contact Email' => $validatedData['data']['contact_email'] ?? '',
+            'Delivery instructions' => $validatedData['data']['delivery_instructions'] ?? '',
         ];
-        if (in_array($tipoEnvio, ['RLOC', 'RFOR'])) {
+        if (in_array($shippingType, ['RLOC', 'RFOR'])) {
             $response = array_merge($response, [
-                'Pagado o por cobrar' => $validatedData['datos']['pagado_por_cobrar'] ?? '',
-                'Dirección de Entrega del cliente' => $validatedData['datos']['direccion_entrega'] ?? '',
-                'Calle y Numero' => $validatedData['datos']['calle_numero'] ?? '',
-                'Colonia' => $validatedData['datos']['colonia'] ?? '',
-                'Estado' => $validatedData['datos']['estado'] ?? '',
-                'Ciudad' => $validatedData['datos']['ciudad'] ?? '',
-                'Pais' => $validatedData['datos']['pais'] ?? '',
-                'C.P' => $validatedData['datos']['cp'] ?? '',
-                'RFC' => $validatedData['datos']['rfc'] ?? '',
+                'Paid or receivable' => $validatedData['data']['paid_or_receivable'] ?? '',
+                'Customer Delivery Address' => $validatedData['data']['customer_delivery_address'] ?? '',
+                'Street and Number' => $validatedData['data']['street_and_number'] ?? '',
+                'Block' => $validatedData['data']['block'] ?? '',
+                'State' => $validatedData['data']['state'] ?? '',
+                'City' => $validatedData['data']['city'] ?? '',
+                'Country' => $validatedData['data']['country'] ?? '',
+                'ZipCode' => $validatedData['data']['ZipCode'] ?? '',
+                'RFC' => $validatedData['data']['rfc'] ?? '',
             ]);
         } 
         // Si el envío es CR
-        elseif ($tipoEnvio == 'CR') {
+        elseif ($shippingType == 'CR') {
             $response = array_merge($response, [
-                'Nombre de Persona autorizada' => $validatedData['datos']['persona_autorizada'] ?? '',
-                'Sucursal' => $validatedData['datos']['sucursal'] ?? '',
-                'Número de identidad' => $validatedData['datos']['numero_identidad'] ?? '',
-                'Fecha de recolección' => $validatedData['datos']['fecha_recoleccion'] ?? '',
+                'Name of Authorized Person' => $validatedData['data']['authorized_person'] ?? '',
+                'Branch' => $validatedData['data']['branch'] ?? '',
+                'Identity number' => $validatedData['data']['identity_number'] ?? '',
+                'Collection date' => $validatedData['data']['collection_date'] ?? '',
             ]);
         }
         // Si el envío es PAQ
-        elseif ($tipoEnvio == 'PAQ') {
+        elseif ($shippingType == 'PAQ') {
             $response = array_merge($response, [
-                'Nombre de Persona autorizada' => $validatedData['datos']['persona_autorizada'] ?? '',
-                'Sucursal' => $validatedData['datos']['sucursal'] ?? '',
-                'Fecha de recolección' => $validatedData['datos']['fecha_recoleccion'] ?? '',
-                'Número de identidad' => $validatedData['datos']['numero_identidad'] ?? '',
+                'Name of Authorized Person' => $validatedData['data']['authorized_person'] ?? '',
+                'Branch' => $validatedData['data']['branch'] ?? '',
+                'Collection date' => $validatedData['data']['collection_date'] ?? '',
+                'Identity number' => $validatedData['data']['identity_number'] ?? '',
             ]);
         }
 
         return $response;
     }
 
-    private function validarSesion($company): bool
+    private function validateSession($company): bool
     {
         $loggedCompany = session('companyDb');
         return $loggedCompany && strtoupper($company) === str_replace('SBO_', '', strtoupper($loggedCompany));

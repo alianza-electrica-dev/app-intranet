@@ -37,13 +37,13 @@ class SapServiceLayer
                 'companyDb' => $this->companyDb
             ]);
             return response()->json([
-                'message'   => 'Login exitoso',
+                'message'   => 'Login successful',
                 'company'   => $this->companyDb,
                 'sessionId' => $this->sessionId
             ]);
         }
         return response()->json([
-            'error'      => 'Login fallido en SAP',
+            'error'      => 'Login failed in SAP',
             'companyDb'  => $this->companyDb,
             'status'     => $response->status(),
             'sap_error'  => $sapResponse
@@ -56,7 +56,7 @@ class SapServiceLayer
     public function logout()
     {
         if (!$this->sessionId) {
-            return response()->json(['message' => 'Sesión ya cerrada.'], 200);
+            return response()->json(['message' => 'Session now closed.'], 200);
         }
         $response = Http::withOptions(['verify' => false])
             ->withHeaders(['Cookie' => "B1SESSION={$this->sessionId}"])
@@ -64,8 +64,8 @@ class SapServiceLayer
         session()->forget(['sessionId', 'companyDb']);
         $this->sessionId = null;
         if ($response->successful()) {
-            return response()->json(['message' => 'Cierre de sesión exitoso']);
+            return response()->json(['message' => 'Successful logout']);
         }
-        return response()->json(['error' => 'Error al cerrar sesión en SAP'], 500);
+        return response()->json(['error' => 'Error when logging out of SAP'], 500);
     }
 }

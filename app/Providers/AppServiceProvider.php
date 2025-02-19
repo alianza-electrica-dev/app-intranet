@@ -13,7 +13,7 @@ class AppServiceProvider extends ServiceProvider
         Http::macro('sapSL', function () {
             $sessionId = session('sessionId');
             if (!$sessionId) {
-                throw new \Exception('No hay sesión activa en SAP');
+                throw new \Exception('There is no active session in SAP');
             }
             $host = config('services.sap.host');
             return Http::withOptions(['verify' => false])

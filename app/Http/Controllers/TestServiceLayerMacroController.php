@@ -25,9 +25,9 @@ class TestServiceLayerMacroController extends Controller
                 'sessionId' => $response->json()['SessionId'],
                 'companyDb' => $company
             ]);
-            return response()->json(['message' => 'Login exitoso', 'company' => $company]);
+            return response()->json(['message' => 'Login successful', 'company' => $company]);
         }
-        return response()->json(['error' => 'Login fallido', 'sap_response' => $response->json()], 401);
+        return response()->json(['error' => 'Login failed', 'sap_response' => $response->json()], 401);
     }
 
     public function getProvidersMacro()
@@ -35,7 +35,7 @@ class TestServiceLayerMacroController extends Controller
         try {
             $response = Http::sapSL()->get('BusinessPartners');
         } catch (\Exception $e) {
-            return response()->json(['error' => 'No hay sesión activa o ha expirado'], 401);
+            return response()->json(['error' => 'There is no active session or it has expired'], 401);
         }
         return $response->json();
     }
