@@ -9,6 +9,7 @@ use App\Http\Controllers\ProductsController;
 use App\Http\Controllers\ShippingAddressController;
 use App\Http\Controllers\QuotationController;
 use Illuminate\Support\Facades\Route;
+use App\Http\Controllers\PdfController;
 
 # login y conexiones a SL
 Route::get('/login/{company}', [TestServiceLayerController::class, 'login']);
@@ -26,6 +27,7 @@ Route::get('/{company}/customers/{identifier}', [CustomersController::class, 'ge
 Route::get('/{company}/pricelist/{cardCode}', [PriceListController::class, 'getPriceLists']);
 Route::get('/{company}/statement/{identifier}', [StatementController::class, 'getAccountStatus']);
 Route::get('/{company}/products/{identifier}', [ProductsController::class, 'getProducts']);
+Route::get('/generar-pdf', [PdfController::class, 'generarPDF']);
 
 
 //Rutas POST
@@ -34,4 +36,8 @@ Route::post('/{company}/{cliente}/shippingaddress', [ShippingAddressController::
 Route::post('/{company}/{cliente}/quote', [QuotationController::class, 'createQuote'])
     ->withoutMiddleware([Illuminate\Foundation\Http\Middleware\VerifyCsrfToken::class]);
 
-});
+})->middleware(['cors']);
+
+
+
+

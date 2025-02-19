@@ -8,7 +8,6 @@ class CompanyController extends Controller
     {
         try {
             $companies = $this->getcompanies();
-            
             return response()->json([
                 'success' => true,
                 'message' => 'Empresas encontradas',
