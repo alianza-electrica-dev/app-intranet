@@ -4,7 +4,7 @@ namespace App\Http\Controllers;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Http\JsonResponse;
 
-class ClientesController extends Controller
+class CustomersController extends Controller
 {
     public function getClientes(string $company, string $identifier): JsonResponse
     {

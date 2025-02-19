@@ -3,7 +3,7 @@
 namespace App\Http\Controllers;
 
 
-class EmpresaController extends Controller
+class CompanyController extends Controller
 {
     public function enterprise()
     {

@@ -6,7 +6,7 @@ use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
 use Carbon\Carbon;
 
-class EdoCuentaController extends Controller
+class StatementController extends Controller
 {
     public function getEstadoCuenta($company, $identifier)
     {

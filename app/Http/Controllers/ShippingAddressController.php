@@ -4,7 +4,7 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 
 
-class DireccionEnvioController extends Controller
+class ShippingAddressController extends Controller
 {
     public function store(Request $request, $company, $cliente)
     {
