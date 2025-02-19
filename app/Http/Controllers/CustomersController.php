@@ -12,21 +12,34 @@ class CustomersController extends Controller
     public function getCustomers(string $company, string $identifier): JsonResponse
     {
         if (!$this->validateSession($company)) {
-            return $this->errorResponse('You are not logged in with this company or your session has expired.', 401);
+            return response()->json([
+                'success' => false,
+                'message' => 'You are not logged in with this company or your session has expired.',
+                'error' => 'Unauthorized access'
+            ], 401);
         }
 
         try {
             $customers = $this->gettingCustomers();
             if ($customers->isEmpty()) {
-                return $this->errorResponse('No clients were found.', 404);
+                return response()->json([
+                    'success' => false,
+                    'message' => 'No clients were found.',
+                ], 404);
             }
+
             $customerExact = $customers->first(function ($customer) use ($identifier) {
                 return $customer['CardCode'] === $identifier || $customer['CardName'] === $identifier;
             });
 
             if ($customerExact) {
-                return $this->successResponse($this->formatCustomer($customerExact));
+                return response()->json([
+                    'success' => true,
+                    'message' => 'Customer found.',
+                    'data' => $this->formatCustomer($customerExact)
+                ]);
             }
+
             $customersFiltered = $customers->filter(function ($customer) use ($identifier) {
                 return stripos($customer['CardCode'], $identifier) !== false
                     || stripos($customer['CardName'], $identifier) !== false;
@@ -38,39 +51,73 @@ class CustomersController extends Controller
             })->values();
 
             if ($customersFiltered->isNotEmpty()) {
-                return $this->successResponse($customersFiltered->toArray());
+                return response()->json([
+                    'success' => true,
+                    'message' => 'Matching customers found.',
+                    'data' => $customersFiltered->toArray()
+                ]);
             }
 
-            return $this->errorResponse('Customer not found.', 404);
+            return response()->json([
+                'success' => false,
+                'message' => 'Customer not found.',
+            ], 404);
         } catch (\Exception $e) {
             Log::error('Error in request to SAP Business One: ' . $e->getMessage());
-            return $this->errorResponse('An error occurred while connecting to the service', 500);
+            return response()->json([
+                'success' => false,
+                'message' => 'An error occurred while connecting to the service',
+                'error' => $e->getMessage(),
+                'file' => $e->getFile(),
+                'line' => $e->getLine(),
+            ], 500);
         }
     }
 
     public function getCustomersDetail(string $company, string $cardCode): JsonResponse
     {
         if (!$this->validateSession($company)) {
-            return $this->errorResponse('You are not logged in with this company or your session has expired.', 401);
+            return response()->json([
+                'success' => false,
+                'message' => 'You are not logged in with this company or your session has expired.',
+                'error' => 'Unauthorized access'
+            ], 401);
         }
 
         try {
             $customers = $this->gettingCustomers();
             if ($customers->isEmpty()) {
-                return $this->errorResponse('No clients were found.', 404);
+                return response()->json([
+                    'success' => false,
+                    'message' => 'No clients were found.',
+                ], 404);
             }
+            
             $customerExact = $customers->first(function ($customer) use ($cardCode) {
                 return $customer['CardCode'] === $cardCode;
             });
 
             if ($customerExact) {
-                return $this->successResponse($this->formatCustomer($customerExact));
+                return response()->json([
+                    'success' => true,
+                    'message' => 'Customer found.',
+                    'data' => $this->formatCustomer($customerExact)
+                ]);
             }
 
-            return $this->errorResponse('Customer not found.', 404);
+            return response()->json([
+                'success' => false,
+                'message' => 'Customer not found.',
+            ], 404);
         } catch (\Exception $e) {
             Log::error('Error in request to SAP Business One: ' . $e->getMessage());
-            return $this->errorResponse('An error occurred while connecting to the service', 500);
+            return response()->json([
+                'success' => false,
+                'message' => 'An error occurred while connecting to the service',
+                'error' => $e->getMessage(),
+                'file' => $e->getFile(),
+                'line' => $e->getLine(),
+            ], 500);
         }
     }
 
@@ -125,15 +172,5 @@ class CustomersController extends Controller
             'BuildingFloorRoom' => $address['BuildingFloorRoom'] ?? null,
             'StreetNo' => $address['StreetNo'] ?? null,
         ];
-    }
-
-    private function successResponse($data, int $status = 200): JsonResponse
-    {
-        return response()->json($data, $status);
-    }
-
-    private function errorResponse(string $message, int $status): JsonResponse
-    {
-        return response()->json(['error' => $message], $status);
     }
 }

@@ -2,14 +2,18 @@
 
 namespace App\Http\Controllers;
 use Illuminate\Http\Request;
-
+use Illuminate\Support\Facades\Log;
 
 class ShippingAddressController extends Controller
 {
     public function store(Request $request, $company, $cliente)
     {
         if (!$this->validateSession($company)) {
-            return response()->json(['error' => 'You are not logged in with this company or your session has expired.'], 401);
+            return response()->json([
+                'success' => false,
+                'message' => 'You are not logged in with this company or your session has expired.',
+                'data' => null
+            ], 401);
         }
 
         $validatedData = $request->validate([
@@ -18,7 +22,22 @@ class ShippingAddressController extends Controller
             'data' => 'required|array',
         ]);
 
-        return response()->json($this->formatResponse($validatedData), 200);
+        try {
+            $response = $this->formatResponse($validatedData);
+            return response()->json([
+                'success' => true,
+                'message' => 'Shipping address processed successfully.',
+                'data' => $response
+            ], 200);
+        } catch (\Exception $e) {
+            Log::error('Error processing shipping address: ' . $e->getMessage());
+            return response()->json([
+                'success' => false,
+                'message' => 'An error occurred while processing the shipping address.',
+                'data' => null,
+                'details' => $e->getMessage()
+            ], 500);
+        }
     }
 
     private function formatResponse(array $validatedData): array
@@ -33,6 +52,7 @@ class ShippingAddressController extends Controller
             'Contact Email' => $validatedData['data']['contact_email'] ?? '',
             'Delivery instructions' => $validatedData['data']['delivery_instructions'] ?? '',
         ];
+
         if (in_array($shippingType, ['RLOC', 'RFOR'])) {
             $response = array_merge($response, [
                 'Paid or receivable' => $validatedData['data']['paid_or_receivable'] ?? '',
@@ -45,18 +65,14 @@ class ShippingAddressController extends Controller
                 'ZipCode' => $validatedData['data']['ZipCode'] ?? '',
                 'RFC' => $validatedData['data']['rfc'] ?? '',
             ]);
-        } 
-        // Si el envío es CR
-        elseif ($shippingType == 'CR') {
+        } elseif ($shippingType == 'CR') {
             $response = array_merge($response, [
                 'Name of Authorized Person' => $validatedData['data']['authorized_person'] ?? '',
                 'Branch' => $validatedData['data']['branch'] ?? '',
                 'Identity number' => $validatedData['data']['identity_number'] ?? '',
                 'Collection date' => $validatedData['data']['collection_date'] ?? '',
             ]);
-        }
-        // Si el envío es PAQ
-        elseif ($shippingType == 'PAQ') {
+        } elseif ($shippingType == 'PAQ') {
             $response = array_merge($response, [
                 'Name of Authorized Person' => $validatedData['data']['authorized_person'] ?? '',
                 'Branch' => $validatedData['data']['branch'] ?? '',
@@ -74,4 +90,3 @@ class ShippingAddressController extends Controller
         return $loggedCompany && strtoupper($company) === str_replace('SBO_', '', strtoupper($loggedCompany));
     }
 }
-?>

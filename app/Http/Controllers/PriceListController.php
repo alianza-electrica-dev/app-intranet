@@ -10,28 +10,48 @@ class PriceListController extends Controller
     public function getPriceLists($company, $cardCode)
     {
         if (!$this->validateSession($company)) {
-            return response()->json(['error' => 'You are not logged in with this company or your session has expired.'], 401);
+            return response()->json([
+                'success' => false,
+                'message' => 'You are not logged in with this company or your session has expired.',
+                'error' => 'Unauthorized access'
+            ], 401);
         }
 
         if (!$cardCode) {
-            return response()->json(['error' => 'You must provide a CardCode.'], 400);
+            return response()->json([
+                'success' => false,
+                'message' => 'You must provide a CardCode.',
+                'error' => 'Invalid input'
+            ], 400);
         }
 
         try {
             $customer = $this->gettingCustomer($cardCode);
             if (!$customer) {
-                return response()->json(['message' => 'Customer not found.'], 404);
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Customer not found.',
+                ], 404);
             }
 
             $priceListNum = $customer['PriceListNum'] ?? null;
             if (!$priceListNum) {
-                return response()->json(['error' => 'The customer does not have a price list assigned.'], 404);
+                return response()->json([
+                    'success' => false,
+                    'message' => 'The customer does not have a price list assigned.',
+                ], 404);
             }
 
             return $this->getPriceList($priceListNum);
         } catch (\Exception $e) {
             Log::error('Error in request to SAP Business One: ' . $e->getMessage());
-            return response()->json(['error' => 'An error occurred while connecting to the service', 'details' => $e->getMessage()], 500);
+            return response()->json([
+                'success' => false,
+                'message' => 'An error occurred while connecting to the service.',
+                'error' => $e->getMessage(),
+                'file' => $e->getFile(),
+                'line' => $e->getLine(),
+            ], 500);
         }
     }
 
@@ -48,8 +68,11 @@ class PriceListController extends Controller
         ]);
 
         if ($response->status() === 401) {
-            response()->json(['error' => 'Session expired. Please log in again.'], 401)->send();
-            exit;
+            return response()->json([
+                'success' => false,
+                'message' => 'Session expired. Please log in again.',
+                'error' => 'Unauthorized access'
+            ], 401);
         }
 
         return collect($response->json()['value'] ?? [])->first();
@@ -59,8 +82,18 @@ class PriceListController extends Controller
     {
         $response = Http::sapSL()->get("PriceLists({$priceListNum})");
 
-        return $response->successful()
-            ? response()->json($response->json(), 200)
-            : response()->json(['error' => 'Error getting price list', 'details' => $response->json()], $response->status());
+        if ($response->successful()) {
+            return response()->json([
+                'success' => true,
+                'message' => 'Price list retrieved successfully.',
+                'data' => $response->json()
+            ], 200);
+        }
+
+        return response()->json([
+            'success' => false,
+            'message' => 'Error getting price list.',
+            'error' => $response->json()
+        ], $response->status());
     }
 }

@@ -10,8 +10,6 @@ use App\Http\Controllers\ShippingAddressController;
 use App\Http\Controllers\QuotationController;
 use Illuminate\Support\Facades\Route;
 
-
-Route::prefix('admin')->name('admin')->group(function () {
 # login y conexiones a SL
 Route::get('/login/{company}', [TestServiceLayerController::class, 'login']);
 Route::get('/providers', [TestServiceLayerController::class, 'getProviders']);
@@ -21,6 +19,7 @@ Route::get('/logout', [TestServiceLayerController::class, 'logout']);
 Route::get('/logout-macro', [TestServiceLayerMacroController::class, 'logoutMacro']); 
 
 
+Route::prefix('admin')->name('admin')->group(function () {
 //Cotizador
 Route::get('/companies', [CompanyController::class, 'enterprise']);
 Route::get('/{company}/customers/{identifier}', [CustomersController::class, 'getCustomers']);

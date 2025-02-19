@@ -2,12 +2,27 @@
 
 namespace App\Http\Controllers;
 
-
 class CompanyController extends Controller
 {
     public function enterprise()
     {
-        return response()->json($this->getcompanies());
+        try {
+            $companies = $this->getcompanies();
+            
+            return response()->json([
+                'success' => true,
+                'message' => 'Empresas encontradas',
+                'data' => $companies
+            ]);
+        } catch (\Throwable $th) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Error al obtener las empresas',
+                'error' => $th->getMessage(),
+                'file' => $th->getFile(),
+                'line' => $th->getLine(),
+            ], 500);
+        }
     }
 
     private function getcompanies()
@@ -22,4 +37,3 @@ class CompanyController extends Controller
         ];
     }
 }
-?>

@@ -11,9 +11,13 @@ class QuotationController extends Controller
     public function createQuote(Request $request, $company, $cliente)
     {
         if (!$this->validateSession($company)) {
-            return response()->json(['error' => 'You are not logged in with this company or your session has expired.'], 401);
+            return response()->json([
+                'success' => false,
+                'message' => 'You are not logged in with this company or your session has expired.',
+                'data' => null
+            ], 401);
         }
-    
+
         $validatedData = $request->validate([
             'CardCode' => 'required|string',
             'DocumentLines' => 'required|array|min:1',
@@ -23,9 +27,9 @@ class QuotationController extends Controller
             'DocumentLines.*.UnitPrice' => 'required|numeric|min:0',
             'DocumentLines.*.DeliveryTime' => 'required|string',
         ]);
-    
+
         $validatedData['CardType'] = 'cCustomer';
-    
+
         try {
             $response = Http::sapSL()->post('Quotations', $validatedData);
             
@@ -37,20 +41,37 @@ class QuotationController extends Controller
                     $line = array_merge($line, $product);
                 }
                 
-                return response()->json(['message' => 'Quote created successfully', 'data' => $quote], 201);
+                return response()->json([
+                    'success' => true,
+                    'message' => 'Quote created successfully',
+                    'data' => $quote
+                ], 201);
             }
             
-            return response()->json(['error' => 'Error creating quote', 'details' => $response->json()], $response->status());
+            return response()->json([
+                'success' => false,
+                'message' => 'Error creating quote',
+                'data' => $response->json()
+            ], $response->status());
         } catch (\Exception $e) {
             Log::error('Error connecting to SAP: ' . $e->getMessage());
-            return response()->json(['error' => 'An error occurred while processing the quote', 'details' => $e->getMessage()], 500);
+            return response()->json([
+                'success' => false,
+                'message' => 'An error occurred while processing the quote',
+                'data' => null,
+                'details' => $e->getMessage()
+            ], 500);
         }
     }
-    
+
     public function consultQuote($company, $docEntry)
     {
         if (!$this->validateSession($company)) {
-            return response()->json(['error' => 'You are not logged in with this company or your session has expired.'], 401);
+            return response()->json([
+                'success' => false,
+                'message' => 'You are not logged in with this company or your session has expired.',
+                'data' => null
+            ], 401);
         }
 
         try {
@@ -62,13 +83,26 @@ class QuotationController extends Controller
                     $product = $this->getProductDetails($line['ItemCode']);
                     $line = array_merge($line, $product);
                 }
-                return response()->json($quote, 200);
+                return response()->json([
+                    'success' => true,
+                    'message' => 'Quote retrieved successfully',
+                    'data' => $quote
+                ], 200);
             }
             
-            return response()->json(['error' => 'Quote not found'], 404);
+            return response()->json([
+                'success' => false,
+                'message' => 'Quote not found',
+                'data' => null
+            ], 404);
         } catch (\Exception $e) {
             Log::error('Error connecting to SAP: ' . $e->getMessage());
-            return response()->json(['error' => 'An error occurred while checking the quote', 'details' => $e->getMessage()], 500);
+            return response()->json([
+                'success' => false,
+                'message' => 'An error occurred while checking the quote',
+                'data' => null,
+                'details' => $e->getMessage()
+            ], 500);
         }
     }
 

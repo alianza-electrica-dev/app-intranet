@@ -12,24 +12,40 @@ class ProductsController extends Controller
     public function getProducts(string $company, string $identifier): JsonResponse
     {
         if (!$this->validateSession($company)) {
-            return $this->errorResponse('You are not logged in with this company or your session has expired', 401);
+            return response()->json([
+                'success' => false,
+                'message' => 'You are not logged in with this company or your session has expired',
+                'data' => null
+            ], 401);
         }
 
         try {
             $products = $this->gettingProducts();
             if ($products->isEmpty()) {
-                return $this->errorResponse('No products found.', 404);
+                return response()->json([
+                    'success' => false,
+                    'message' => 'No products found.',
+                    'data' => null
+                ], 404);
             }
 
             $exactProduct = $products->firstWhere('TreeCode', $identifier);
             if ($exactProduct) {
-                return $this->successResponse($this->formatProduct($exactProduct));
+                return response()->json([
+                    'success' => true,
+                    'message' => 'Product found.',
+                    'data' => $this->formatProduct($exactProduct)
+                ], 200);
             }
 
             foreach ($products as $product) {
                 foreach ($product['ProductTreeLines'] as $line) {
                     if ($line['ItemName'] === $identifier) {
-                        return $this->successResponse($this->formatProduct($product));
+                        return response()->json([
+                            'success' => true,
+                            'message' => 'Product found.',
+                            'data' => $this->formatProduct($product)
+                        ], 200);
                     }
                 }
             }
@@ -38,17 +54,34 @@ class ProductsController extends Controller
             $filteredLines = $this->filterLinesProducts($products, $identifier);
 
             if ($filteredProducts->isNotEmpty()) {
-                return $this->successResponse($filteredProducts);
+                return response()->json([
+                    'success' => true,
+                    'message' => 'Filtered products found.',
+                    'data' => $filteredProducts
+                ], 200);
             }
 
             if ($filteredLines->isNotEmpty()) {
-                return $this->successResponse($filteredLines);
+                return response()->json([
+                    'success' => true,
+                    'message' => 'Filtered product lines found.',
+                    'data' => $filteredLines
+                ], 200);
             }
 
-            return $this->errorResponse('Product not found.', 404);
+            return response()->json([
+                'success' => false,
+                'message' => 'Product not found.',
+                'data' => null
+            ], 404);
         } catch (\Exception $e) {
             Log::error('Error in request to SAP Business One: ' . $e->getMessage());
-            return $this->errorResponse('An error occurred while connecting to the service', 500, $e->getMessage());
+            return response()->json([
+                'success' => false,
+                'message' => 'An error occurred while connecting to the service',
+                'data' => null,
+                'details' => $e->getMessage()
+            ], 500);
         }
     }
 
@@ -99,15 +132,4 @@ class ProductsController extends Controller
             ])->values()
         ];
     }
-
-    private function successResponse($data, int $status = 200): JsonResponse
-    {
-        return response()->json($data, $status);
-    }
-
-    private function errorResponse(string $message, int $status, string $details = ''): JsonResponse
-    {
-        return response()->json(['error' => $message, 'details' => $details], $status);
-    }
 }
-?>

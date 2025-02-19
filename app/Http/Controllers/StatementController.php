@@ -11,24 +11,45 @@ class StatementController extends Controller
     public function getAccountStatus($company, $identifier)
     {
         if (!$this->validateSession($company)) {
-            return response()->json(['error' => 'You are not logged in with this company or your session has expired.'], 401);
+            return response()->json([
+                'success' => false,
+                'message' => 'You are not logged in with this company or your session has expired.',
+                'data' => null
+            ], 401);
         }
 
         if (!$identifier) {
-            return response()->json(['error' => 'You must provide a CardCode or CardName.'], 400);
+            return response()->json([
+                'success' => false,
+                'message' => 'You must provide a CardCode or CardName.',
+                'data' => null
+            ], 400);
         }
 
         try {
             $customer = $this->consultCustomer($identifier);
 
             if (!$customer) {
-                return response()->json(['message' => 'Customer not found.'], 404);
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Customer not found.',
+                    'data' => null
+                ], 404);
             }
 
-            return response()->json($this->formatAccountStatus($customer), 200);
+            return response()->json([
+                'success' => true,
+                'message' => 'Account status retrieved successfully.',
+                'data' => $this->formatAccountStatus($customer)
+            ], 200);
         } catch (\Exception $e) {
             Log::error('Error in request to SAP Business One: ' . $e->getMessage());
-            return response()->json(['error' => 'An error occurred while connecting to the service', 'details' => $e->getMessage()], 500);
+            return response()->json([
+                'success' => false,
+                'message' => 'An error occurred while connecting to the service',
+                'data' => null,
+                'details' => $e->getMessage()
+            ], 500);
         }
     }
 
@@ -45,8 +66,11 @@ class StatementController extends Controller
         ]);
 
         if ($response->status() === 401) {
-            response()->json(['error' => 'Session expired. Please log in again.'], 401)->send();
-            exit;
+            return response()->json([
+                'success' => false,
+                'message' => 'Session expired. Please log in again.',
+                'data' => null
+            ], 401);
         }
 
         return collect($response->json()['value'] ?? [])->first();
@@ -64,7 +88,7 @@ class StatementController extends Controller
             'CurrentAccountBalance' => $currentBalance,
             'CreditLimit'           => $creditLimit,
             'CreditoDisponible'     => max(0, $creditLimit - $currentBalance),
-            'Debit balance'           => max(0, $currentBalance),
+            'Debit balance'         => max(0, $currentBalance),
             'Credit Days'           => $lastPaymentDate ? $this->getCreditDaysSinceLastPayment($lastPaymentDate) : null,
             'LastPaymentDate'       => $lastPaymentDate,
             'PayTermsGrpCode'       => $customer['PayTermsGrpCode'] ?? null,
@@ -73,7 +97,6 @@ class StatementController extends Controller
 
     private function getCreditDaysSinceLastPayment($lastPaymentDate)
     {
-        // Convertimos el resultado a entero para eliminar cualquier decimal.
         return (int) Carbon::parse($lastPaymentDate)->diffInDays(Carbon::now());
     }
 
