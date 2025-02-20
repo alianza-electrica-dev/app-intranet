@@ -25,7 +25,7 @@ class ProductsController extends Controller
                 return response()->json([
                     'success' => false,
                     'message' => 'No products found.',
-                    'data' => null
+                    'Product' => null
                 ], 404);
             }
 
@@ -34,7 +34,7 @@ class ProductsController extends Controller
                 return response()->json([
                     'success' => true,
                     'message' => 'Product found.',
-                    'data' => $this->formatProduct($exactProduct)
+                    'Product' => $this->formatProduct($exactProduct)
                 ], 200);
             }
 
@@ -44,7 +44,7 @@ class ProductsController extends Controller
                         return response()->json([
                             'success' => true,
                             'message' => 'Product found.',
-                            'data' => $this->formatProduct($product)
+                            'Product' => $this->formatProduct($product)
                         ], 200);
                     }
                 }
@@ -57,7 +57,7 @@ class ProductsController extends Controller
                 return response()->json([
                     'success' => true,
                     'message' => 'Filtered products found.',
-                    'data' => $filteredProducts
+                    'Product' => $filteredProducts
                 ], 200);
             }
 
@@ -65,21 +65,21 @@ class ProductsController extends Controller
                 return response()->json([
                     'success' => true,
                     'message' => 'Filtered product lines found.',
-                    'data' => $filteredLines
+                    'Product' => $filteredLines
                 ], 200);
             }
 
             return response()->json([
                 'success' => false,
                 'message' => 'Product not found.',
-                'data' => null
+                'Product' => null
             ], 404);
         } catch (\Exception $e) {
             Log::error('Error in request to SAP Business One: ' . $e->getMessage());
             return response()->json([
                 'success' => false,
                 'message' => 'An error occurred while connecting to the service',
-                'data' => null,
+                'Product' => null,
                 'details' => $e->getMessage()
             ], 500);
         }

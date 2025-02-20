@@ -44,21 +44,21 @@ class QuotationController extends Controller
                 return response()->json([
                     'success' => true,
                     'message' => 'Quote created successfully',
-                    'data' => $quote
+                    'Quote creation' => $quote
                 ], 201);
             }
             
             return response()->json([
                 'success' => false,
                 'message' => 'Error creating quote',
-                'data' => $response->json()
+                'Quote creation error' => $response->json()
             ], $response->status());
         } catch (\Exception $e) {
             Log::error('Error connecting to SAP: ' . $e->getMessage());
             return response()->json([
                 'success' => false,
                 'message' => 'An error occurred while processing the quote',
-                'data' => null,
+                'error connecting to sap service' => null,
                 'details' => $e->getMessage()
             ], 500);
         }
@@ -86,21 +86,21 @@ class QuotationController extends Controller
                 return response()->json([
                     'success' => true,
                     'message' => 'Quote retrieved successfully',
-                    'data' => $quote
+                    'Quote recovered' => $quote
                 ], 200);
             }
             
             return response()->json([
                 'success' => false,
                 'message' => 'Quote not found',
-                'data' => null
+                'Quote not found' => null
             ], 404);
         } catch (\Exception $e) {
             Log::error('Error connecting to SAP: ' . $e->getMessage());
             return response()->json([
                 'success' => false,
                 'message' => 'An error occurred while checking the quote',
-                'data' => null,
+                'error connecting to sap service' => null,
                 'details' => $e->getMessage()
             ], 500);
         }

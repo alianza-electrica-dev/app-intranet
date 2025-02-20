@@ -86,7 +86,7 @@ class PriceListController extends Controller
             return response()->json([
                 'success' => true,
                 'message' => 'Price list retrieved successfully.',
-                'data' => $response->json()
+                'PriceListNum' => $response->json()
             ], 200);
         }
 

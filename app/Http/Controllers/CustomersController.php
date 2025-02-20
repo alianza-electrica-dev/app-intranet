@@ -36,7 +36,7 @@ class CustomersController extends Controller
                 return response()->json([
                     'success' => true,
                     'message' => 'Customer found.',
-                    'data' => $this->formatCustomer($customerExact)
+                    'customer' => $this->formatCustomer($customerExact)
                 ]);
             }
 
@@ -54,7 +54,7 @@ class CustomersController extends Controller
                 return response()->json([
                     'success' => true,
                     'message' => 'Matching customers found.',
-                    'data' => $customersFiltered->toArray()
+                    'customer' => $customersFiltered->toArray()
                 ]);
             }
 
@@ -101,7 +101,7 @@ class CustomersController extends Controller
                 return response()->json([
                     'success' => true,
                     'message' => 'Customer found.',
-                    'data' => $this->formatCustomer($customerExact)
+                    'customer' => $this->formatCustomer($customerExact)
                 ]);
             }
 

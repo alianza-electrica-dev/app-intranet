@@ -11,7 +11,7 @@ class CompanyController extends Controller
             return response()->json([
                 'success' => true,
                 'message' => 'Empresas encontradas',
-                'data' => $companies
+                'Companies' => $companies
             ]);
         } catch (\Throwable $th) {
             return response()->json([

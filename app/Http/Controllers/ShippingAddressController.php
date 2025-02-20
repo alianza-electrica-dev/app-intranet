@@ -27,14 +27,14 @@ class ShippingAddressController extends Controller
             return response()->json([
                 'success' => true,
                 'message' => 'Shipping address processed successfully.',
-                'data' => $response
+                'Shipping Address Received' => $response
             ], 200);
         } catch (\Exception $e) {
             Log::error('Error processing shipping address: ' . $e->getMessage());
             return response()->json([
                 'success' => false,
                 'message' => 'An error occurred while processing the shipping address.',
-                'data' => null,
+                'Error receiving with shipping address' => null,
                 'details' => $e->getMessage()
             ], 500);
         }

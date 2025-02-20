@@ -22,7 +22,7 @@ class StatementController extends Controller
             return response()->json([
                 'success' => false,
                 'message' => 'You must provide a CardCode or CardName.',
-                'data' => null
+                'You need to write a cadcode or card name' => null
             ], 400);
         }
 
@@ -33,21 +33,21 @@ class StatementController extends Controller
                 return response()->json([
                     'success' => false,
                     'message' => 'Customer not found.',
-                    'data' => null
+                    'Customer not found' => null
                 ], 404);
             }
 
             return response()->json([
                 'success' => true,
                 'message' => 'Account status retrieved successfully.',
-                'data' => $this->formatAccountStatus($customer)
+                'statement' => $this->formatAccountStatus($customer)
             ], 200);
         } catch (\Exception $e) {
             Log::error('Error in request to SAP Business One: ' . $e->getMessage());
             return response()->json([
                 'success' => false,
                 'message' => 'An error occurred while connecting to the service',
-                'data' => null,
+                'error when connecting with sap' => null,
                 'details' => $e->getMessage()
             ], 500);
         }
