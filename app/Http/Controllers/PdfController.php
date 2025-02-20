@@ -1,4 +1,8 @@
 <?php
+/*
+Solo es una prueba
+
+*/
 namespace App\Http\Controllers;
 use Dompdf\Dompdf;
 use Illuminate\Support\Facades\Response;
