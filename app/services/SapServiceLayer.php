@@ -20,35 +20,44 @@ class SapServiceLayer
     }
 
     public function login($companyDb)
-    {
-        $this->companyDb = $companyDb;
-        $response = Http::withOptions(['verify' => false])
-            ->post("{$this->host}/b1s/v1/Login", [
-                'CompanyDB' => $this->companyDb,
-                'UserName'  => $this->username,
-                'Password'  => $this->password,
-            ]);
-
-        $sapResponse = $response->json();
-        if ($response->successful() && isset($sapResponse['SessionId'])) {
-            $this->sessionId = $sapResponse['SessionId'];
-            session([
-                'sessionId' => $this->sessionId,
-                'companyDb' => $this->companyDb
-            ]);
-            return response()->json([
-                'message'   => 'Login successful',
-                'company'   => $this->companyDb,
-                'sessionId' => $this->sessionId
-            ]);
-        }
+{
+    if (session()->has('sessionId')) {
         return response()->json([
-            'error'      => 'Login failed in SAP',
-            'companyDb'  => $this->companyDb,
-            'status'     => $response->status(),
-            'sap_error'  => $sapResponse
-        ], 401);
+            'message'   => 'Already logged in',
+            'company'   => session('companyDb'),
+            'sessionId' => session('sessionId')
+        ]);
     }
+
+    $this->companyDb = $companyDb;
+    $response = Http::withOptions(['verify' => false])
+        ->post("{$this->host}/b1s/v1/Login", [
+            'CompanyDB' => $this->companyDb,
+            'UserName'  => $this->username,
+            'Password'  => $this->password,
+        ]);
+
+    $sapResponse = $response->json();
+    if ($response->successful() && isset($sapResponse['SessionId'])) {
+        $this->sessionId = $sapResponse['SessionId'];
+        session([
+            'sessionId' => $this->sessionId,
+            'companyDb' => $this->companyDb
+        ]);
+        return response()->json([
+            'message'   => 'Login successful',
+            'company'   => $this->companyDb,
+            'sessionId' => $this->sessionId
+        ]);
+    }
+    return response()->json([
+        'error'      => 'Login failed in SAP',
+        'companyDb'  => $this->companyDb,
+        'status'     => $response->status(),
+        'sap_error'  => $sapResponse
+    ], 401);
+}
+
     public function getSessionId()
     {
         return $this->sessionId;
@@ -68,4 +77,6 @@ class SapServiceLayer
         }
         return response()->json(['error' => 'Error when logging out of SAP'], 500);
     }
+
+    
 }
