@@ -10,7 +10,7 @@ class AppServiceProvider extends ServiceProvider
     public function register(): void { }
     public function boot(): void
     {
-        $this->autoLogin(); // <-- Agregar esta línea
+        $this->autoLogin();
     
         Http::macro('sapSL', function () {
             $sessionId = session('sessionId');
@@ -27,7 +27,7 @@ class AppServiceProvider extends ServiceProvider
     protected function autoLogin()
     {
         if (!session()->has('sessionId')) {
-            $companyDb = 'SBO_Pruebas'; // Puedes cambiarlo o hacerlo dinámico
+            $companyDb = 'SBO_Pruebas';
             $response = Http::withOptions(['verify' => false])
                 ->post(config('services.sap.host') . '/b1s/v1/Login', [
                     'CompanyDB' => $companyDb,
