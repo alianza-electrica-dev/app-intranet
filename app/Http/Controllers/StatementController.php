@@ -10,7 +10,7 @@ class StatementController extends Controller
 {
     public function getAccountStatus($company, $identifier)
     {
-        if (!$this->validateSession($company)) {
+        if (!$this->validateSession()) {
             return response()->json([
                 'success' => false,
                 'message' => 'You are not logged in with this company or your session has expired.',
@@ -53,10 +53,9 @@ class StatementController extends Controller
         }
     }
 
-    private function validateSession($company)
+    private function validateSession(): bool
     {
-        $loggedCompany = session('companyDb');
-        return $loggedCompany && strtoupper($company) === str_replace('SBO_', '', strtoupper($loggedCompany));
+        return !empty(session('companyDb', ''));
     }
 
     private function consultCustomer($identifier)

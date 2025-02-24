@@ -9,13 +9,13 @@ use Illuminate\Support\Collection;
 
 class ProductsController extends Controller
 {
-    public function getProducts(string $company, string $identifier): JsonResponse
+    public function getProducts(string $identifier): JsonResponse
     {
-        if (!$this->validateSession($company)) {
+        if (!$this->validateSession()) {
             return response()->json([
                 'success' => false,
-                'message' => 'You are not logged in with this company or your session has expired',
-                'data' => null
+                'message' => 'You are not logged in or your session has expired',
+                'Product' => null
             ], 401);
         }
 
@@ -85,9 +85,9 @@ class ProductsController extends Controller
         }
     }
 
-    private function validateSession(string $company): bool
+    private function validateSession(): bool
     {
-        return strtoupper($company) === str_replace('SBO_', '', strtoupper(session('companyDb', '')));
+        return !empty(session('companyDb', ''));
     }
 
     private function gettingProducts(): Collection
@@ -119,16 +119,16 @@ class ProductsController extends Controller
     private function formatProduct(array $product): array
     {
         return [
-            'TreeCode' => $product['TreeCode'] ?? null,
-            'TreeType' => $product['TreeType'] ?? null,
-            'Quantity' => $product['Quantity'] ?? null,
-            'ProductDescription' => $product['ProductDescription'] ?? null,
-            'ProductTreeLines' => collect($product['ProductTreeLines'] ?? [])->map(fn($line) => [
-                'ItemCode' => $line['ItemCode'] ?? null,
-                'ItemName' => $line['ItemName'] ?? null,
-                'Quantity' => $line['Quantity'] ?? null,
-                'Warehouse' => $line['Warehouse'] ?? null,
-                'Price' => $line['Price'] ?? 0.0,
+            'TreeCode'            => $product['TreeCode'] ?? null,
+            'TreeType'            => $product['TreeType'] ?? null,
+            'Quantity'            => $product['Quantity'] ?? null,
+            'ProductDescription'  => $product['ProductDescription'] ?? null,
+            'ProductTreeLines'    => collect($product['ProductTreeLines'] ?? [])->map(fn($line) => [
+                'ItemCode'   => $line['ItemCode'] ?? null,
+                'ItemName'   => $line['ItemName'] ?? null,
+                'Quantity'   => $line['Quantity'] ?? null,
+                'Warehouse'  => $line['Warehouse'] ?? null,
+                'Price'      => $line['Price'] ?? 0.0,
             ])->values()
         ];
     }

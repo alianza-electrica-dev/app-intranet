@@ -9,13 +9,13 @@ use Illuminate\Support\Collection;
 
 class CustomersController extends Controller
 {
-    public function getCustomers(string $company, string $identifier): JsonResponse
+    public function getCustomers(string $identifier): JsonResponse
     {
-        if (!$this->validateSession($company)) {
+        if (!$this->validateSession()) {
             return response()->json([
                 'success' => false,
-                'message' => 'You are not logged in with this company or your session has expired.',
-                'error' => 'Unauthorized access'
+                'message' => 'You are not logged in or your session has expired.',
+                'error'   => 'Unauthorized access'
             ], 401);
         }
 
@@ -34,8 +34,8 @@ class CustomersController extends Controller
 
             if ($customerExact) {
                 return response()->json([
-                    'success' => true,
-                    'message' => 'Customer found.',
+                    'success'  => true,
+                    'message'  => 'Customer found.',
                     'customer' => $this->formatCustomer($customerExact)
                 ]);
             }
@@ -52,8 +52,8 @@ class CustomersController extends Controller
 
             if ($customersFiltered->isNotEmpty()) {
                 return response()->json([
-                    'success' => true,
-                    'message' => 'Matching customers found.',
+                    'success'  => true,
+                    'message'  => 'Matching customers found.',
                     'customer' => $customersFiltered->toArray()
                 ]);
             }
@@ -67,20 +67,20 @@ class CustomersController extends Controller
             return response()->json([
                 'success' => false,
                 'message' => 'An error occurred while connecting to the service',
-                'error' => $e->getMessage(),
-                'file' => $e->getFile(),
-                'line' => $e->getLine(),
+                'error'   => $e->getMessage(),
+                'file'    => $e->getFile(),
+                'line'    => $e->getLine(),
             ], 500);
         }
     }
 
-    public function getCustomersDetail(string $company, string $cardCode): JsonResponse
+    public function getCustomersDetail(string $cardCode): JsonResponse
     {
-        if (!$this->validateSession($company)) {
+        if (!$this->validateSession()) {
             return response()->json([
                 'success' => false,
-                'message' => 'You are not logged in with this company or your session has expired.',
-                'error' => 'Unauthorized access'
+                'message' => 'You are not logged in or your session has expired.',
+                'error'   => 'Unauthorized access'
             ], 401);
         }
 
@@ -99,8 +99,8 @@ class CustomersController extends Controller
 
             if ($customerExact) {
                 return response()->json([
-                    'success' => true,
-                    'message' => 'Customer found.',
+                    'success'  => true,
+                    'message'  => 'Customer found.',
                     'customer' => $this->formatCustomer($customerExact)
                 ]);
             }
@@ -114,16 +114,17 @@ class CustomersController extends Controller
             return response()->json([
                 'success' => false,
                 'message' => 'An error occurred while connecting to the service',
-                'error' => $e->getMessage(),
-                'file' => $e->getFile(),
-                'line' => $e->getLine(),
+                'error'   => $e->getMessage(),
+                'file'    => $e->getFile(),
+                'line'    => $e->getLine(),
             ], 500);
         }
     }
 
-    private function validateSession(string $company): bool
+    private function validateSession(): bool
     {
-        return strtoupper($company) === str_replace('SBO_', '', strtoupper(session('companyDb', '')));
+        $company = session('companyDb', '');
+        return !empty($company);
     }
 
     private function gettingCustomers(): Collection
@@ -165,12 +166,12 @@ class CustomersController extends Controller
     {
         $address = collect($addresses)->firstWhere('AddressName', $tipo) ?? [];
         return [
-            'Street'          => $address['Street'] ?? null,
-            'State'         => $address['State'] ?? null,
-            'ZipCode'   => $address['ZipCode'] ?? null,
-            'Block'        => $address['Block'] ?? null,
+            'Street'            => $address['Street'] ?? null,
+            'State'             => $address['State'] ?? null,
+            'ZipCode'           => $address['ZipCode'] ?? null,
+            'Block'             => $address['Block'] ?? null,
             'BuildingFloorRoom' => $address['BuildingFloorRoom'] ?? null,
-            'StreetNo' => $address['StreetNo'] ?? null,
+            'StreetNo'          => $address['StreetNo'] ?? null,
         ];
     }
 }

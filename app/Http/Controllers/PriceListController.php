@@ -7,13 +7,13 @@ use Illuminate\Support\Facades\Log;
 
 class PriceListController extends Controller
 {
-    public function getPriceLists($company, $cardCode)
+    public function getPriceLists($cardCode)
     {
-        if (!$this->validateSession($company)) {
+        if (!$this->validateSession()) {
             return response()->json([
                 'success' => false,
-                'message' => 'You are not logged in with this company or your session has expired.',
-                'error' => 'Unauthorized access'
+                'message' => 'You are not logged in or your session has expired.',
+                'error'   => 'Unauthorized access'
             ], 401);
         }
 
@@ -21,7 +21,7 @@ class PriceListController extends Controller
             return response()->json([
                 'success' => false,
                 'message' => 'You must provide a CardCode.',
-                'error' => 'Invalid input'
+                'error'   => 'Invalid input'
             ], 400);
         }
 
@@ -48,17 +48,16 @@ class PriceListController extends Controller
             return response()->json([
                 'success' => false,
                 'message' => 'An error occurred while connecting to the service.',
-                'error' => $e->getMessage(),
-                'file' => $e->getFile(),
-                'line' => $e->getLine(),
+                'error'   => $e->getMessage(),
+                'file'    => $e->getFile(),
+                'line'    => $e->getLine(),
             ], 500);
         }
     }
 
-    private function validateSession($company)
+    private function validateSession(): bool
     {
-        $loggedCompany = session('companyDb');
-        return $loggedCompany && strtoupper($company) === str_replace('SBO_', '', strtoupper($loggedCompany));
+        return !empty(session('companyDb', ''));
     }
 
     private function gettingCustomer($cardCode)
@@ -71,7 +70,7 @@ class PriceListController extends Controller
             return response()->json([
                 'success' => false,
                 'message' => 'Session expired. Please log in again.',
-                'error' => 'Unauthorized access'
+                'error'   => 'Unauthorized access'
             ], 401);
         }
 
@@ -84,8 +83,8 @@ class PriceListController extends Controller
 
         if ($response->successful()) {
             return response()->json([
-                'success' => true,
-                'message' => 'Price list retrieved successfully.',
+                'success'      => true,
+                'message'      => 'Price list retrieved successfully.',
                 'PriceListNum' => $response->json()
             ], 200);
         }
@@ -93,7 +92,7 @@ class PriceListController extends Controller
         return response()->json([
             'success' => false,
             'message' => 'Error getting price list.',
-            'error' => $response->json()
+            'error'   => $response->json()
         ], $response->status());
     }
 }

@@ -10,7 +10,7 @@ class QuotationController extends Controller
 {
     public function createQuote(Request $request, $company, $cliente)
     {
-        if (!$this->validateSession($company)) {
+        if (!$this->validateSession()) {
             return response()->json([
                 'success' => false,
                 'message' => 'You are not logged in with this company or your session has expired.',
@@ -66,7 +66,7 @@ class QuotationController extends Controller
 
     public function consultQuote($company, $docEntry)
     {
-        if (!$this->validateSession($company)) {
+        if (!$this->validateSession()) {
             return response()->json([
                 'success' => false,
                 'message' => 'You are not logged in with this company or your session has expired.',
@@ -145,8 +145,8 @@ class QuotationController extends Controller
         return [];
     }
 
-    private function validateSession($company)
+    private function validateSession(): bool
     {
-        return strtoupper($company) === str_replace('SBO_', '', strtoupper(session('companyDb', '')));
+        return !empty(session('companyDb', ''));
     }
 }

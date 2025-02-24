@@ -21,22 +21,21 @@ Route::get('/logout-macro', [TestServiceLayerMacroController::class, 'logoutMacr
 
 
 Route::prefix('admin')->name('admin')->group(function () {
-//Cotizador
-Route::get('/companies', [CompanyController::class, 'enterprise']);
-Route::get('/{company}/customers/{identifier}', [CustomersController::class, 'getCustomers']);
-Route::get('/{company}/pricelist/{cardCode}', [PriceListController::class, 'getPriceLists']);
-Route::get('/{company}/statement/{identifier}', [StatementController::class, 'getAccountStatus']);
-Route::get('/{company}/products/{identifier}', [ProductsController::class, 'getProducts']);
-Route::get('/generar-pdf', [PdfController::class, 'generarPDF']);
+    // Cotizador
+    Route::get('/companies', [CompanyController::class, 'enterprise']);
+    Route::get('/customers/{identifier}', [CustomersController::class, 'getCustomers']);
+    Route::get('/pricelist/{cardCode}', [PriceListController::class, 'getPriceLists']);
+    Route::get('/statement/{identifier}', [StatementController::class, 'getAccountStatus']);
+    Route::get('/products/{identifier}', [ProductsController::class, 'getProducts']);
+    Route::get('/generar-pdf', [PdfController::class, 'generarPDF']);
 
-
-//Rutas POST
-Route::post('/{company}/{cliente}/shippingaddress', [ShippingAddressController::class, 'store'])
-    ->withoutMiddleware([Illuminate\Foundation\Http\Middleware\VerifyCsrfToken::class]);
-Route::post('/{company}/{cliente}/quote', [QuotationController::class, 'createQuote'])
-    ->withoutMiddleware([Illuminate\Foundation\Http\Middleware\VerifyCsrfToken::class]);
-
+    // Rutas POST
+    Route::post('/{cliente}/shippingaddress', [ShippingAddressController::class, 'store'])
+        ->withoutMiddleware([Illuminate\Foundation\Http\Middleware\VerifyCsrfToken::class]);
+    Route::post('/{cliente}/quote', [QuotationController::class, 'createQuote'])
+        ->withoutMiddleware([Illuminate\Foundation\Http\Middleware\VerifyCsrfToken::class]);
 })->middleware(['cors']);
+
 
 
 
